@@ -1,14 +1,25 @@
 const fs = require("fs");
 const express = require("express");
+const morgan = require("morgan");
 
 const app = express();
 const port = 3000;
+
+// 1) MIDDLEWARES
+app.use(morgan("dev"));
+
 app.use(express.json());
+
+app.use((req, res, next) => {
+  console.log("Hello from the middleware 😎");
+  next();
+});
 
 const tours = JSON.parse(
   fs.readFileSync(`${__dirname}/dev-data/data/tours-simple.json`, "utf-8")
 );
 
+// 2) ROUTE HANDLERS
 const getAllTours = (req, res) => {
   res
     .status(200)
@@ -73,6 +84,7 @@ const deleteTour = (req, res) => {
 // app.patch("/api/v1/tours/:tourId", updateTour);
 // app.delete("/api/v1/tours/:tourId", deleteTour);
 
+// 3) ROUTES
 app.route("/api/v1/tours").get(getAllTours).post(createTour);
 app
   .route("/api/v1/tours/:tourId")
@@ -80,6 +92,7 @@ app
   .patch(updateTour)
   .delete(deleteTour);
 
+// 4) START SERVER
 app.listen(port, () => {
   console.log(`server listening on port ${port}`);
 });
