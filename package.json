@@ -4,8 +4,11 @@
   "description": "Learning node express.js and mongogDB",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "nodemon app.js"
   },
   "author": "Riad Hallouch",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.3"
+  }
 }
