@@ -2,13 +2,14 @@ const Tour = require("../models/tourModel");
 
 const getAllTours = async (req, res) => {
   try {
+    console.log(req.query);
     // BUILD QUERY
-    // 1) FILTERING
+    // 1A) Filtering
     const queryObj = { ...req.query };
     const excludedFields = ["page", "sort", "limit", "fields"];
     excludedFields.forEach((field) => delete queryObj[field]);
 
-    // 2) Advanced filtering
+    // 2B) Advanced filtering
 
     // '""' => TO REPLACE EXACT STRING
     const queryStr = JSON.stringify(queryObj)
@@ -17,10 +18,15 @@ const getAllTours = async (req, res) => {
       .replaceAll('"lte"', '"$lte"')
       .replaceAll('"lt"', '"$lt"');
 
-    console.log(queryObj);
-    console.log(JSON.parse(queryStr));
+    let query = Tour.find(JSON.parse(queryStr));
 
-    const query = Tour.find(JSON.parse(queryStr));
+    // 2) Sorting
+    if (req.query.sort) {
+      const sortBy = req.query.sort.split(",").join(" ");
+      query = query.sort(sortBy);
+    } else {
+      query = query.sort("-createdAt");
+    }
 
     // EXCUTE QUERY
     const tours = await query;
