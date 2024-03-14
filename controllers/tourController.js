@@ -12,7 +12,7 @@ const getAllTours = async (req, res) => {
     // 2B) Advanced filtering
 
     // '""' => TO REPLACE EXACT STRING
-    const queryStr = JSON.stringify(queryObj)
+    const queryStr = JSON.stringify()
       .replaceAll('"gte"', '"$gte"')
       .replaceAll('"gt"', '"$gt"')
       .replaceAll('"lte"', '"$lte"')
@@ -30,21 +30,26 @@ const getAllTours = async (req, res) => {
 
     // 3) Field limiting
     if (req.query.fields) {
-      console.log(req.query.fields);
       const fields = req.query.fields.split(",").join(" ");
       query = query.select(fields);
     } else {
       query = query.select("-__v");
     }
 
+    // 4) Pagination
+    const page = req.query.page * 1 || 1;
+    const limit = req.query.limit * 1 || 100;
+    const skip = (page - 1) * limit;
+
+    query = query.skip(skip).limit(limit);
+
+    if (req.query.page) {
+      const numTours = await Tour.countDocuments();
+      if (skip >= numTours) throw new Error("This page doesn't exist.");
+    }
+
     // EXCUTE QUERY
     const tours = await query;
-
-    // const query = Tour.find()
-    //   .where("duration")
-    //   .equals(5)
-    //   .where("difficulty")
-    //   .equals("easy");
 
     // SEND RESPONSE
     res
@@ -53,7 +58,7 @@ const getAllTours = async (req, res) => {
   } catch (err) {
     res.status(404).json({
       status: "fail",
-      message: err,
+      message: err.message,
     });
   }
 };
